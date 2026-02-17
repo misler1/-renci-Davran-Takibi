@@ -17,6 +17,7 @@ export const users = pgTable("users", {
   classTeacherOf: text("class_teacher_of"), // e.g., "9-A" (nullable)
   coachGroup: text("coach_group"), // e.g., "Group 1" (nullable)
   isFirstLogin: boolean("is_first_login").default(true),
+  status: text("status").notNull().default("active"), // active, archived
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -29,6 +30,7 @@ export const students = pgTable("students", {
   parentName: text("parent_name"),
   parentPhone: text("parent_phone"),
   coachId: integer("coach_id").references(() => users.id), // Assigned coach teacher
+  status: text("status").notNull().default("active"), // active, archived
   createdAt: timestamp("created_at").defaultNow(),
 });
 

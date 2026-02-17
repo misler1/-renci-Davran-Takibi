@@ -14,6 +14,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<User>;
+  deleteUser(id: number): Promise<void>;
   getUsers(): Promise<User[]>;
   getTeachers(): Promise<User[]>; // Filter by role 'teacher'
 
@@ -21,6 +22,8 @@ export interface IStorage {
   getStudent(id: number): Promise<Student | undefined>;
   getStudentByNumber(number: string): Promise<Student | undefined>;
   createStudent(student: InsertStudent): Promise<Student>;
+  updateStudent(id: number, updates: Partial<Student>): Promise<Student>;
+  deleteStudent(id: number): Promise<void>;
   getStudents(): Promise<Student[]>;
   getStudentsByClass(className: string): Promise<Student[]>;
 
@@ -69,6 +72,10 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(users).where(eq(users.role, 'teacher')).orderBy(users.fullName);
   }
 
+  async deleteUser(id: number): Promise<void> {
+    await db.delete(users).where(eq(users.id, id));
+  }
+
   // Students
   async getStudent(id: number): Promise<Student | undefined> {
     const [student] = await db.select().from(students).where(eq(students.id, id));
@@ -83,6 +90,15 @@ export class DatabaseStorage implements IStorage {
   async createStudent(student: InsertStudent): Promise<Student> {
     const [newStudent] = await db.insert(students).values(student).returning();
     return newStudent;
+  }
+
+  async updateStudent(id: number, updates: Partial<Student>): Promise<Student> {
+    const [updated] = await db.update(students).set(updates).where(eq(students.id, id)).returning();
+    return updated;
+  }
+
+  async deleteStudent(id: number): Promise<void> {
+    await db.delete(students).where(eq(students.id, id));
   }
 
   async getStudents(): Promise<Student[]> {

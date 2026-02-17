@@ -121,6 +121,33 @@ export async function registerRoutes(
     res.json(user);
   });
 
+  app.post(api.users.create.path, requireAuth, async (req, res) => {
+    try {
+      const input = api.users.create.input.parse(req.body);
+      // Hash default password or provided one
+      const hashedPassword = await hashPassword(input.password || "P123456");
+      const user = await storage.createUser({ ...input, password: hashedPassword });
+      res.status(201).json(user);
+    } catch (err) {
+      res.status(400).json({ message: "Invalid input" });
+    }
+  });
+
+  app.patch(api.users.update.path, requireAuth, async (req, res) => {
+    try {
+      const input = api.users.update.input.parse(req.body);
+      const user = await storage.updateUser(Number(req.params.id), input);
+      res.json(user);
+    } catch (err) {
+      res.status(400).json({ message: "Invalid input" });
+    }
+  });
+
+  app.delete(api.users.delete.path, requireAuth, async (req, res) => {
+    await storage.deleteUser(Number(req.params.id));
+    res.json({ success: true });
+  });
+
   app.get(api.students.list.path, requireAuth, async (req, res) => {
     const students = await storage.getStudents();
     res.json(students);
@@ -147,6 +174,21 @@ export async function registerRoutes(
         res.status(500).json({ message: "Internal server error" });
       }
     }
+  });
+
+  app.patch(api.students.update.path, requireAuth, async (req, res) => {
+    try {
+      const input = api.students.update.input.parse(req.body);
+      const student = await storage.updateStudent(Number(req.params.id), input);
+      res.json(student);
+    } catch (err) {
+      res.status(400).json({ message: "Invalid input" });
+    }
+  });
+
+  app.delete(api.students.delete.path, requireAuth, async (req, res) => {
+    await storage.deleteStudent(Number(req.params.id));
+    res.json({ success: true });
   });
 
   app.get(api.behaviors.list.path, requireAuth, async (req, res) => {
