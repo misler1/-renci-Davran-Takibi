@@ -5,28 +5,70 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { BehaviorDialog } from "@/components/behavior-dialog";
-import { useRoute } from "wouter";
+import { useRoute, useLocation } from "wouter";
 import { 
   User, 
   Phone, 
   Users, 
   Clock, 
   CheckCircle2, 
-  AlertCircle 
+  AlertCircle,
+  Archive,
+  Trash2,
+  Edit
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { useMutation } from "@tanstack/react-query";
+import { api, buildUrl } from "@shared/routes";
+import { queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function StudentDetail() {
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
   const [, params] = useRoute("/students/:id");
   const studentId = Number(params?.id);
   
   const { data: student, isLoading: loadingStudent } = useStudent(studentId);
   const { data: behaviors, isLoading: loadingBehaviors } = useBehaviors({ studentId: String(studentId) });
 
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(buildUrl(api.students.delete.path, { id: studentId }), {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.students.list.path] });
+      toast({ title: "Success", description: "Student deleted successfully" });
+      setLocation("/students");
+    },
+  });
+
+  const archiveMutation = useMutation({
+    mutationFn: async (status: string) => {
+      const res = await fetch(buildUrl(api.students.update.path, { id: studentId }), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error("Failed to update status");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.students.list.path] });
+      queryClient.invalidateQueries({ queryKey: [buildUrl(api.students.get.path, { id: studentId })] });
+      toast({ title: "Success", description: "Student status updated" });
+    },
+  });
+
   if (!user) return null;
-  if (loadingStudent) return null; // Or a nice spinner
+  if (loadingStudent) return null;
   if (!student) return <div>Student not found</div>;
 
   return (
@@ -37,7 +79,29 @@ export default function StudentDetail() {
           title={student.fullName}
           description={`Class ${student.className} • ID: ${student.studentNumber}`}
         >
-          <BehaviorDialog currentUserId={user.id} defaultStudentId={student.id} />
+          <div className="flex flex-wrap gap-2">
+            <BehaviorDialog currentUserId={user.id} defaultStudentId={student.id} />
+            <Button 
+              variant="outline" 
+              className="rounded-xl border-slate-200"
+              onClick={() => archiveMutation.mutate(student.status === 'active' ? 'archived' : 'active')}
+            >
+              <Archive className="w-4 h-4 mr-2" />
+              {student.status === 'active' ? 'Archive' : 'Restore'}
+            </Button>
+            <Button 
+              variant="outline" 
+              className="rounded-xl border-slate-200 text-red-600 hover:bg-red-50"
+              onClick={() => {
+                if (confirm("Are you sure you want to delete this student?")) {
+                  deleteMutation.mutate();
+                }
+              }}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete
+            </Button>
+          </div>
         </PageHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

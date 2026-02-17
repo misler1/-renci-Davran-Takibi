@@ -8,6 +8,8 @@ import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import Students from "@/pages/students";
 import StudentDetail from "@/pages/student-detail";
+import Teachers from "@/pages/teachers";
+import Messages from "@/pages/messages";
 import NotFound from "@/pages/not-found";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
@@ -37,10 +39,8 @@ function Router() {
       <Route path="/" component={() => <PrivateRoute component={Dashboard} />} />
       <Route path="/students" component={() => <PrivateRoute component={Students} />} />
       <Route path="/students/:id" component={() => <PrivateRoute component={StudentDetail} />} />
-      
-      {/* Placeholder pages for routes not fully implemented in this MVP pass but referenced in nav */}
-      <Route path="/teachers" component={() => <div className="p-8">Teachers Page (Coming Soon)</div>} />
-      <Route path="/messages" component={() => <div className="p-8">Messages Page (Coming Soon)</div>} />
+      <Route path="/teachers" component={() => <PrivateRoute component={Teachers} />} />
+      <Route path="/messages" component={() => <PrivateRoute component={Messages} />} />
       <Route path="/notifications" component={() => <div className="p-8">Notifications Page (Coming Soon)</div>} />
 
       <Route component={NotFound} />
