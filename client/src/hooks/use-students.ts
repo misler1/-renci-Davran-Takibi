@@ -1,12 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, buildUrl, type InsertStudent } from "@shared/routes";
+import { api, buildUrl } from "@shared/routes";
 import { useToast } from "@/hooks/use-toast";
+import { apiUrl } from "@/lib/api-base";
+import { z } from "zod";
+
+type InsertStudent = z.infer<typeof api.students.create.input>;
 
 export function useStudents() {
   return useQuery({
     queryKey: [api.students.list.path],
     queryFn: async () => {
-      const res = await fetch(api.students.list.path);
+      const res = await fetch(apiUrl(api.students.list.path), {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Failed to fetch students");
       return api.students.list.responses[200].parse(await res.json());
     },
@@ -18,7 +24,9 @@ export function useStudent(id: number) {
     queryKey: [api.students.get.path, id],
     queryFn: async () => {
       const url = buildUrl(api.students.get.path, { id });
-      const res = await fetch(url);
+      const res = await fetch(apiUrl(url), {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Failed to fetch student");
       return api.students.get.responses[200].parse(await res.json());
     },
@@ -32,10 +40,11 @@ export function useCreateStudent() {
 
   return useMutation({
     mutationFn: async (data: InsertStudent) => {
-      const res = await fetch(api.students.create.path, {
+      const res = await fetch(apiUrl(api.students.create.path), {
         method: api.students.create.method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include",
       });
 
       if (!res.ok) throw new Error("Failed to create student");

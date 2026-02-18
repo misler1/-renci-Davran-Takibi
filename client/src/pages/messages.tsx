@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Search, User } from "lucide-react";
+import { Send, Search, User, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import type { Message, User as Teacher } from "@shared/schema";
+import { apiUrl } from "@/lib/api-base";
 
 export default function Messages() {
   const { user: currentUser } = useAuth();
@@ -28,7 +29,10 @@ export default function Messages() {
     queryKey: [api.messages.list.path, selectedContact?.id],
     enabled: !!selectedContact,
     queryFn: async () => {
-      const res = await fetch(`${api.messages.list.path}?contactId=${selectedContact?.id}`);
+      const res = await fetch(
+        apiUrl(`${api.messages.list.path}?contactId=${selectedContact?.id}`),
+        { credentials: "include" },
+      );
       if (!res.ok) throw new Error("Failed to fetch messages");
       return res.json();
     },
@@ -38,7 +42,7 @@ export default function Messages() {
   const sendMutation = useMutation({
     mutationFn: async (content: string) => {
       if (!selectedContact || !currentUser) return;
-      const res = await fetch(api.messages.send.path, {
+      const res = await fetch(apiUrl(api.messages.send.path), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -46,6 +50,7 @@ export default function Messages() {
           recipientId: selectedContact.id,
           content,
         }),
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to send");
       return res.json();

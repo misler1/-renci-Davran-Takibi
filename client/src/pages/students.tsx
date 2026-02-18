@@ -31,6 +31,8 @@ import { useMutation } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { apiUrl } from "@/lib/api-base";
+import { cn } from "@/lib/utils";
 
 export default function Students() {
   const { user } = useAuth();
@@ -41,10 +43,11 @@ export default function Students() {
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await fetch(api.students.create.path, {
+      const res = await fetch(apiUrl(api.students.create.path), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to create student");
       return res.json();

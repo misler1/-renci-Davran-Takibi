@@ -44,6 +44,8 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  const isProduction = process.env.NODE_ENV === "production";
+  const sameSite = (process.env.SESSION_SAME_SITE ?? "lax") as "lax" | "strict" | "none";
 
   // Session Setup
   const SessionStore = MemoryStore(session);
@@ -52,7 +54,12 @@ export async function registerRoutes(
       secret: process.env.SESSION_SECRET || "default_secret_key",
       resave: false,
       saveUninitialized: false,
-      cookie: { maxAge: 86400000 }, // 24h
+      cookie: {
+        maxAge: 86400000, // 24h
+        httpOnly: true,
+        sameSite,
+        secure: isProduction,
+      },
       store: new SessionStore({
         checkPeriod: 86400000,
       }),

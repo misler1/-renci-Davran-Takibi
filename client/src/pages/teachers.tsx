@@ -10,6 +10,8 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { apiUrl } from "@/lib/api-base";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -43,8 +45,9 @@ export default function Teachers() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(buildUrl(api.users.delete.path, { id }), {
+      const res = await fetch(apiUrl(buildUrl(api.users.delete.path, { id })), {
         method: "DELETE",
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to delete");
       return res.json();
@@ -57,10 +60,11 @@ export default function Teachers() {
 
   const archiveMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      const res = await fetch(buildUrl(api.users.update.path, { id }), {
+      const res = await fetch(apiUrl(buildUrl(api.users.update.path, { id })), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to update status");
       return res.json();
@@ -73,10 +77,11 @@ export default function Teachers() {
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await fetch(api.users.create.path, {
+      const res = await fetch(apiUrl(api.users.create.path), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to create teacher");
       return res.json();

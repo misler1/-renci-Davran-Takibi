@@ -24,6 +24,7 @@ import { useMutation } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { apiUrl } from "@/lib/api-base";
 
 export default function StudentDetail() {
   const { user } = useAuth();
@@ -37,8 +38,9 @@ export default function StudentDetail() {
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch(buildUrl(api.students.delete.path, { id: studentId }), {
+      const res = await fetch(apiUrl(buildUrl(api.students.delete.path, { id: studentId })), {
         method: "DELETE",
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to delete");
       return res.json();
@@ -52,10 +54,11 @@ export default function StudentDetail() {
 
   const archiveMutation = useMutation({
     mutationFn: async (status: string) => {
-      const res = await fetch(buildUrl(api.students.update.path, { id: studentId }), {
+      const res = await fetch(apiUrl(buildUrl(api.students.update.path, { id: studentId })), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to update status");
       return res.json();
