@@ -42,9 +42,30 @@ class _LoginPageState extends State<LoginPage> {
                     const Icon(Icons.school_rounded, size: 52, color: Color(0xFF2563EB)),
                     const Text("Ogrenci Davranis Takip Sistemi", textAlign: TextAlign.center, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 16),
-                    TextField(controller: u, decoration: const InputDecoration(labelText: "Kullanici Adi", border: OutlineInputBorder())),
+                    TextField(
+                      controller: u,
+                      decoration: const InputDecoration(
+                        labelText: "Kullanici Adi",
+                        border: OutlineInputBorder(),
+                        suffixIcon: Tooltip(
+                          message: "Kurumsal e-postada @ isaretinden onceki kisim kullanici adidir.",
+                          child: Icon(Icons.info_outline),
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 10),
-                    TextField(controller: p, obscureText: true, decoration: const InputDecoration(labelText: "Sifre", border: OutlineInputBorder())),
+                    TextField(
+                      controller: p,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: "Sifre",
+                        border: OutlineInputBorder(),
+                        suffixIcon: Tooltip(
+                          message: "Ilk giriste varsayilan sifre kullanilir. Ardindan sifrenizi yenileyerek devam edersiniz.",
+                          child: Icon(Icons.info_outline),
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 14),
                     SizedBox(
                       width: double.infinity,
@@ -73,8 +94,6 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    const Text("Canli Surum: 2026-02-19 11:30", style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
                   ],
                 ),
               ),

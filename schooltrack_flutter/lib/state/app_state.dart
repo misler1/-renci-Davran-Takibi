@@ -114,23 +114,23 @@ class AppState {
     final canonicalUsersById = {for (final u in users) u.id: u};
     final canonicalUsersByUsername = {for (final u in users) u.username.toLowerCase(): u};
     final canonicalStudentsById = {for (final s in students) s.id: s};
-    var core = await FirestoreDataService.loadUsersAndStudents();
+    var all = await FirestoreDataService.loadAll();
 
-    if (core.users.isEmpty) {
+    if (all.users.isEmpty) {
       // Firebase bos kurulumda acildiginda varsayilan kullanicilari bir kez yukle.
       await FirestoreDataService.syncUsers(users);
-      core = await FirestoreDataService.loadUsersAndStudents();
-      if (core.users.isEmpty) {
+      all = await FirestoreDataService.loadAll();
+      if (all.users.isEmpty) {
         throw StateError("Firebase users koleksiyonu bos veya okunamiyor.");
       }
     }
 
-    if (core.students.isEmpty) {
+    if (all.students.isEmpty) {
       await FirestoreDataService.syncStudents(students);
-      core = await FirestoreDataService.loadUsersAndStudents();
+      all = await FirestoreDataService.loadAll();
     }
     final normalizedUsers = <AppUser>[];
-    for (final remoteUser in core.users) {
+    for (final remoteUser in all.users) {
       final canonical = canonicalUsersById[remoteUser.id];
       normalizedUsers.add(
         AppUser(
@@ -164,9 +164,9 @@ class AppState {
       unawaited(FirestoreDataService.syncUsers(users));
     }
 
-    if (core.students.isNotEmpty) {
+    if (all.students.isNotEmpty) {
       final normalizedStudents = <Student>[];
-      for (final remoteStudent in core.students) {
+      for (final remoteStudent in all.students) {
         final canonical = canonicalStudentsById[remoteStudent.id];
         normalizedStudents.add(
           Student(
@@ -186,22 +186,12 @@ class AppState {
         ..clear()
         ..addAll(normalizedStudents);
     }
-    unawaited(_loadRemainingFromFirestore());
-  }
-
-  Future<void> _loadRemainingFromFirestore() async {
-    final remaining = await FirestoreDataService.loadBehaviorsAndMessages();
-    if (remaining.behaviors.isNotEmpty) {
-      behaviors
-        ..clear()
-        ..addAll(remaining.behaviors);
-    }
-
-    if (remaining.messages.isNotEmpty) {
-      messages
-        ..clear()
-        ..addAll(remaining.messages);
-    }
+    behaviors
+      ..clear()
+      ..addAll(all.behaviors);
+    messages
+      ..clear()
+      ..addAll(all.messages);
   }
 
   int _nextId(Iterable<int> ids) {

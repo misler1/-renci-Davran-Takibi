@@ -338,6 +338,9 @@ class DashboardPage extends StatelessWidget {
     final currentUserId = state.user!.id;
     final studentsById = {for (final s in state.students) s.id: s};
     final teachersById = {for (final t in state.users) t.id: t};
+    // Bildirim listesi acildiginda okunduya cekerek rozet sayacini temizle.
+    await FirebaseNotificationService.markAllReadForUser(currentUserId);
+    if (!context.mounted) return;
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
